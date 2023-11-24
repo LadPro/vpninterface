@@ -1,33 +1,55 @@
 <script>
+    let isLoading = false
     let click = false
     let hover = true;
+    let respuesta = ''
     // let click = true
     export let texto = 'Inglaterra';
-    let estadoa = 1;
-    let estadob = 1;
+    export let inputData = 'inglaterra';
 
-  function cambiarEstadoa() {
-    // Cambiar el estado del botón
-    estadoa = (estadoa % 2) + 1;
-    console.log(estadoa)
-    console.log(click)
-  }
-  function cambiarEstadob() {
-    // Cambiar el estado del botón
-    estadob = (estadob % 2) + 1;
-    console.log(estadob)
-    console.log(click)
-  }
+    async function postdata () {
+        isLoading = true
+        const url = `http://127.0.0.1:5000/encender_una`; // Reemplaza esto con tu URL de servidor
+        
+        const data = { input: inputData }; // Datos a enviar
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                // La solicitud fue exitosa, puedes manejar la respuesta aquí
+                const responseData = await response.json();
+                console.log('Respuesta del servidor:', responseData);
+                responseData
+                
+                let string = JSON.stringify(responseData)
+                respuesta = string
+            } else {
+                // La solicitud falló
+                console.error('Error en la solicitud:', response.status);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }finally{
+          isLoading = false
+        }
+    }
   </script>
 
 <button
   on:mouseenter={() => (hover = false)}
   on:mouseleave={() => (hover = true)}
   on:click={() => (click = true)}
-  class:hidden={click}
+  on:click={postdata}
+  class:cargando={isLoading}
   aria-label="Click para acceder al correo"
-  class={`relative overflow-hidden lg:rounded-lg rounded-3xl w-96 h-14 ${estadoa === 1 ? 'apagado' : estadoa === 2 ? 'estado-2' : 'estado-3'}`}
-  >
+  class="relative overflow-hidden lg:rounded-lg rounded-3xl w-96 h-14 bg-orange-500">
   <div
   class="absolute inset-0 flex flex-col items-center justify-center transition-all duration-500"
   class:translate-y-0={hover}
@@ -48,44 +70,23 @@
 </div>
 </button>
 
-
-
-<button
-on:mouseenter={() => (hover = false)}
-on:mouseleave={() => (hover = true)}
-on:click={() => (click = false)}
-  class:hidden={!click}
-  aria-label="Click para acceder al correo"
-  class={`relative overflow-hidden lg:rounded-lg rounded-3xl w-96 h-14 ${estadob === 1 ? 'encendido' : 'estado-2'}`}
->
-  <div
-    class="absolute inset-0 flex flex-col items-center justify-center transition-all duration-500"
-    class:translate-y-0={hover}
-    class:-translate-y-full={!hover}
-  >
-    <p style="color: #000;" class="font-semibold text-3xl">
-      {texto}
-    </p>
-  </div>
-  <div
-    class="absolute inset-0 flex flex-col items-center justify-center transition-all duration-500"
-    class:translate-y-0={!hover}
-    class:translate-y-full={hover}
-  >
-    <p style="color: #000;" class="font-semibold text-3xl">
-      Detener en {texto}
-    </p>
-  </div>
-</button>
-
 <style>
-  .apagado {
-    @apply bg-orange-500;
+  @keyframes coloresCambiantes {
+  0% {
+    background-position: 0%;
   }
-
-  .estado-2 {
-    @apply bg-gradient-to-r from-green-400 to-blue-500; /* Colores cambiantes */
+  100% {
+    background-position: 300%;
   }
+}
+  .cargando {
+    @apply bg-gradient-to-r from-red-500 to-green-500 via-blue-500 bg-cover text-white transition-colors duration-300;
+    animation-name: coloresCambiantes; /* Nombre del keyframe */
+    animation-duration: 3s; /* Duración de la animación en segundos */
+    animation-timing-function: ease-in-out; /* Función de temporización de la animación */
+    animation-iteration-count: infinite; /* Número de repeticiones (en este caso, infinito) */
+  }
+  
 
   .encendido {
     @apply bg-green-500;
